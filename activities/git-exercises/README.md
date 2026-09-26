@@ -1,150 +1,75 @@
-\# Git Exercises
+# Git Exercises
 
+**Course:** CCC181  
+**Student Name:** Lumasag, Shasheenah Deeneille  
+**Student ID:** 20230483  
 
-
-\*\*Course:\*\* CCC181  
-
-\*\*Student Name:\*\* Lumasag, Shasheenah Deeneille  
-
-\*\*Student ID:\*\* 20230483
-
-
-
-\## Activity Description
-
-
+## Activity Description
 
 This folder contains my screenshot submissions for the assigned Git Exercises activity.
 
-
-
-The Git exercises were completed through: \[Git Exercises](https://gitexercises.fracz.com/)
-
-
+The Git exercises were completed through: [Git Exercises](https://gitexercises.fracz.com/)
 
 My Git configuration uses my student ID number without the hyphen, as instructed.
 
-
-
-\## Submitted Screenshots
-
-
+## Submitted Screenshots
 
 | Exercise No. | Exercise Title | Screenshot File |
-
 |---|---|---|
+| 01 | Push a commit you have made | `Lumasag_ShasheenahDeeneille_01.png` |
+| 02 | Commit one file | `Lumasag_ShasheenahDeeneille_02.png` |
+| 03 | Commit one file of two currently staged | `Lumasag_ShasheenahDeeneille_03.png` |
+| 04 | Ignore unwanted files | `Lumasag_ShasheenahDeeneille_04.png` |
+| 05 | Chase branch that escaped | `Lumasag_ShasheenahDeeneille_05.png` |
+| 06 | Resolve a merge conflict | `Lumasag_ShasheenahDeeneille_06.png` |
+| 07 | Saving your work | `Lumasag_ShasheenahDeeneille_07.png` |
+| 08 | Change branch history | `Lumasag_ShasheenahDeeneille_08.png` |
+| 09 | Remove ignored file | `Lumasag_ShasheenahDeeneille_09.png` |
+| 10 | Change a letter case in the filename of an already tracked file | `Lumasag_ShasheenahDeeneille_10.png` |
+| 11 | Fix typographic mistake in the last commit | `Lumasag_ShasheenahDeeneille_11.png` |
+| 12 | Forge the commit's date | `Lumasag_ShasheenahDeeneille_12.png` |
+| 13 | Fix typographic mistake in old commit| `Lumasag_ShasheenahDeeneille_13.png` |
+| 14 | Find a commit that has been lost | `Lumasag_ShasheenahDeeneille_14.png` |
+| 15 | Split the last commit | `Lumasag_ShasheenahDeeneille_15.png` |
+| 16 | Too many commits | `Lumasag_ShasheenahDeeneille_16.png` |
+| 17 | Make the file executable by default | `Lumasag_ShasheenahDeeneille_17.png` |
+| 18 | Commit part of work | `Lumasag_ShasheenahDeeneille_18.png` |
+| 19 | Pick your features | `Lumasag_ShasheenahDeeneille_19.png` |
+| 20 | Rebase complex | `Lumasag_ShasheenahDeeneille_20.png` |
+| 21 | Change order of commits | `Lumasag_ShasheenahDeeneille_21.png` |
+| 22 | Find commits that introduced swearwords | `Lumasag_ShasheenahDeeneille_22.png` |
+| 23 | Find commit that has introduced bug | `Lumasag_ShasheenahDeeneille_23.png` |
 
-| 01 | master | `Lumasag\_ShasheenahDeeneille\_01.png` |
-
-| 02 | commit-one-by-one | `Lumasag\_ShasheenahDeeneille\_02.png` |
-
-| 03 | post-mortem | `Lumasag\_ShasheenahDeeneille\_03.png` |
-
-| 04 | dont-touch-frederick | `Lumasag\_ShasheenahDeeneille\_04.png` |
-
-| 05 | squash-with-rebase | `Lumasag\_ShasheenahDeeneille\_05.png` |
-
-| 06 | merge-conflict | `Lumasag\_ShasheenahDeeneille\_06.png` |
-
-| 07 | save-your-work | `Lumasag\_ShasheenahDeeneille\_07.png` |
-
-| 08 | change-branch-history | `Lumasag\_ShasheenahDeeneille\_08.png` |
-
-| 09 | remove-ignored | `Lumasag\_ShasheenahDeeneille\_09.png` |
-
-| 10 | case-sensitive-filename | `Lumasag\_ShasheenahDeeneille\_10.png` |
-
-| 11 | fix-typo | `Lumasag\_ShasheenahDeeneille\_11.png` |
-
-| 12 | forge-date | `Lumasag\_ShasheenahDeeneille\_12.png` |
-
-| 13 | fix-old-typo | `Lumasag\_ShasheenahDeeneille\_13.png` |
-
-| 14 | commit-lost | `Lumasag\_ShasheenahDeeneille\_14.png` |
-
-| 15 | split-commit | `Lumasag\_ShasheenahDeeneille\_15.png` |
-
-| 16 | too-many-commits | `Lumasag\_ShasheenahDeeneille\_16.png` |
-
-| 17 | executable | `Lumasag\_ShasheenahDeeneille\_17.png` |
-
-| 18 | commit-parts | `Lumasag\_ShasheenahDeeneille\_18.png` |
-
-| 19 | pick-your-features | `Lumasag\_ShasheenahDeeneille\_19.png` |
-
-| 20 | reorder-commits | `Lumasag\_ShasheenahDeeneille\_20.png` |
-
-| 21 | interactive-rebase | `Lumasag\_ShasheenahDeeneille\_21.png` |
-
-| 22 | find-swearwords | `Lumasag\_ShasheenahDeeneille\_22.png` |
-
-| 23 | find-bug | `Lumasag\_ShasheenahDeeneille\_23.png` |
-
-
-
-\## Folder Contents
-
-
+## Folder Contents
 
 ```text
-
 activities/git-exercises/
-
 ├── README.md
-
-├── Lumasag\_ShasheenahDeeneille\_01.png
-
-├── Lumasag\_ShasheenahDeeneille\_02.png
-
-├── Lumasag\_ShasheenahDeeneille\_03.png
-
-├── Lumasag\_ShasheenahDeeneille\_04.png
-
-├── Lumasag\_ShasheenahDeeneille\_05.png
-
-├── Lumasag\_ShasheenahDeeneille\_06.png
-
-├── Lumasag\_ShasheenahDeeneille\_07.png
-
-├── Lumasag\_ShasheenahDeeneille\_08.png
-
-├── Lumasag\_ShasheenahDeeneille\_09.png
-
-├── Lumasag\_ShasheenahDeeneille\_10.png
-
-├── Lumasag\_ShasheenahDeeneille\_11.png
-
-├── Lumasag\_ShasheenahDeeneille\_12.png
-
-├── Lumasag\_ShasheenahDeeneille\_13.png
-
-├── Lumasag\_ShasheenahDeeneille\_14.png
-
-├── Lumasag\_ShasheenahDeeneille\_15.png
-
-├── Lumasag\_ShasheenahDeeneille\_16.png
-
-├── Lumasag\_ShasheenahDeeneille\_17.png
-
-├── Lumasag\_ShasheenahDeeneille\_18.png
-
-├── Lumasag\_ShasheenahDeeneille\_19.png
-
-├── Lumasag\_ShasheenahDeeneille\_20.png
-
-├── Lumasag\_ShasheenahDeeneille\_21.png
-
-├── Lumasag\_ShasheenahDeeneille\_22.png
-
-└── Lumasag\_ShasheenahDeeneille\_23.png
-
+├── Lumasag_ShasheenahDeeneille_01.png
+├── Lumasag_ShasheenahDeeneille_02.png
+├── Lumasag_ShasheenahDeeneille_03.png
+├── Lumasag_ShasheenahDeeneille_04.png
+├── Lumasag_ShasheenahDeeneille_05.png
+├── Lumasag_ShasheenahDeeneille_06.png
+├── Lumasag_ShasheenahDeeneille_07.png
+├── Lumasag_ShasheenahDeeneille_08.png
+├── Lumasag_ShasheenahDeeneille_09.png
+├── Lumasag_ShasheenahDeeneille_10.png
+├── Lumasag_ShasheenahDeeneille_11.png
+├── Lumasag_ShasheenahDeeneille_12.png
+├── Lumasag_ShasheenahDeeneille_13.png
+├── Lumasag_ShasheenahDeeneille_14.png
+├── Lumasag_ShasheenahDeeneille_15.png
+├── Lumasag_ShasheenahDeeneille_16.png
+├── Lumasag_ShasheenahDeeneille_17.png
+├── Lumasag_ShasheenahDeeneille_18.png
+├── Lumasag_ShasheenahDeeneille_19.png
+├── Lumasag_ShasheenahDeeneille_20.png
+├── Lumasag_ShasheenahDeeneille_21.png
+├── Lumasag_ShasheenahDeeneille_22.png
+└── Lumasag_ShasheenahDeeneille_23.png
 ```
 
-
-
-\## Declaration
-
-
+## Declaration
 
 I confirm that the screenshots in this folder show my own completion or progress for the required Git Exercises activity.
-
