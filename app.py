@@ -86,9 +86,48 @@ def leave(ticket_id):
     flash(f"Ticket #{ticket_id} has left the queue.", "info")
     return redirect(url_for("index"))
     
-@app.route("/staff")
+@app.get("/staff")
 def staff_dashboard():
-    return "Staff dashboard coming soon"
+    service_id = request.args.get("service_id", type=int)
+    queue = [t for t in TICKETS if t["status"] in ("waiting", "called")]
+    if service_id:
+        queue = [t for t in queue if t["service_id"] == service_id]
+    names = {s["id"]: s["name"] for s in SERVICES}
+    # Star feature: how many families are waiting per barangay, and how many already received
+    waiting_counts = {s["id"]: sum(1 for t in TICKETS
+                                   if t["service_id"] == s["id"] and t["status"] == "waiting")
+                      for s in SERVICES}
+    received = sum(1 for t in TICKETS if t["status"] == "served")
+    has_waiting = any(t["status"] == "waiting" for t in queue)
+    return render_template("staff.html", queue=queue, services=SERVICES, names=names,
+                           selected=service_id, waiting_counts=waiting_counts,
+                           received=received, has_waiting=has_waiting)
+ 
+ 
+@app.post("/staff/call-next")
+def call_next():
+    service_id = request.form.get("service_id", type=int)
+    nxt = next((t for t in TICKETS
+                if t["status"] == "waiting"
+                and (not service_id or t["service_id"] == service_id)), None)
+    if nxt is None:
+        flash("No one is waiting.", "warning")
+    else:
+        nxt["status"] = "called"
+        flash(f"Ticket #{nxt['number']} is called.", "info")
+    return redirect(url_for("staff_dashboard", service_id=service_id))
+ 
+ 
+@app.post("/staff/tickets/<int:ticket_id>/<action>")
+def staff_action(ticket_id, action):
+    new_status = {"call": "called", "serve": "served", "no-show": "no-show"}.get(action)
+    t = next((t for t in TICKETS if t["number"] == ticket_id), None)
+    if t is None or new_status is None:
+        abort(404)
+    t["status"] = new_status
+    label = "received" if new_status == "served" else new_status
+    flash(f"Ticket #{ticket_id} marked {label}.", "info")
+    return redirect(url_for("staff_dashboard", service_id=request.form.get("service_id", type=int)))
 
 if __name__ == "__main__":
     # Lets you also start the app with: python app.py

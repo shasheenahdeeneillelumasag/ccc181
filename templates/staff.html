@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Staff dashboard · ReliefQ{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Staff dashboard</h1>
+
+{# Star feature: counts per barangay #}
+<div class="row g-2 mb-3">
+  {% for s in services %}
+  <div class="col-12 col-sm-6 col-md-3">
+    <div class="border rounded p-2 bg-white h-100">
+      <div class="small text-body-secondary">{{ s.name }}</div>
+      <div class="fs-4 fw-bold">{{ waiting_counts[s.id] }} <span class="fs-6 fw-normal">waiting</span></div>
+    </div>
+  </div>
+  {% endfor %}
+  <div class="col-12 col-sm-6 col-md-3">
+    <div class="border rounded p-2 bg-white h-100">
+      <div class="small text-body-secondary">Families that received goods</div>
+      <div class="fs-4 fw-bold">{{ received }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="d-flex flex-column flex-md-row gap-3 align-items-md-end mb-3">
+  <form method="get" action="{{ url_for('staff_dashboard') }}" class="d-flex gap-2 align-items-end">
+    <div>
+      <label for="service_id" class="form-label mb-1">Show barangay</label>
+      <select id="service_id" name="service_id" class="form-select">
+        <option value="">All barangays</option>
+        {% for s in services %}
+          <option value="{{ s.id }}" {% if selected == s.id %}selected{% endif %}>{{ s.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-outline-secondary">Filter</button>
+  </form>
+
+  <form method="post" action="{{ url_for('call_next') }}" class="ms-md-auto">
+    <input type="hidden" name="service_id" value="{{ selected or '' }}">
+    <button type="submit" class="btn btn-primary btn-lg w-100" {% if not has_waiting %}disabled{% endif %}>
+      Call next family
+    </button>
+  </form>
+</div>
+
+{% if queue %}
+<div class="table-responsive">
+  <table class="table table-bordered align-middle bg-white">
+    <caption>Families waiting or called, in ticket order</caption>
+    <thead class="table-light">
+      <tr>
+        <th scope="col">No.</th>
+        <th scope="col">Name</th>
+        <th scope="col">Family members</th>
+        <th scope="col">Barangay and time slot</th>
+        <th scope="col">Status</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in queue %}
+      <tr>
+        <th scope="row">#{{ t.number }}</th>
+        <td>{{ t.name }}</td>
+        <td>{{ t.household_size }}</td>
+        <td>{{ names[t.service_id] }}</td>
+        <td>
+          {% if t.status == "waiting" %}<span class="badge text-bg-warning">Waiting</span>
+          {% else %}<span class="badge text-bg-success">Called</span>{% endif %}
+        </td>
+        <td class="text-nowrap">
+          <form method="post" action="{{ url_for('staff_action', ticket_id=t.number, action='serve') }}" class="d-inline">
+            <input type="hidden" name="service_id" value="{{ selected or '' }}">
+            <button type="submit" class="btn btn-sm btn-success" aria-label="Mark ticket {{ t.number }} as received">Received</button>
+          </form>
+          <form method="post" action="{{ url_for('staff_action', ticket_id=t.number, action='no-show') }}" class="d-inline">
+            <input type="hidden" name="service_id" value="{{ selected or '' }}">
+            <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Mark ticket {{ t.number }} as no-show">No-show</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="border rounded p-4 text-center bg-white">
+  <p class="fs-5 mb-1">No one is waiting right now.</p>
+  <p class="text-body-secondary mb-0">New families will show up here when they join the queue.</p>
+</div>
+{% endif %}
+{% endblock %}
