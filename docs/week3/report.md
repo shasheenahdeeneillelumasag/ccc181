@@ -10,7 +10,7 @@
 | **Student ID** | 2023-0483 |
 | **Section** | CS3B |
 | **Date** | October 24, 2026 |
-| **Pull request** | https://github.com/shasheenahdeeneillelumasag/ccc181/pulls |
+| **Pull request** | https://github.com/shasheenahdeeneillelumasag/ccc181/pull/2 |
 
 ## 2. Personas
 
