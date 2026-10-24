@@ -10,23 +10,27 @@
         <p class="display-1 fw-bold mb-2">#{{ ticket.number }}</p>
         <p class="mb-3">{{ service.name }}</p>
 
-                <div id="live-status" aria-live="polite">
+        <div id="live-status" aria-live="polite">
           {% if ticket.status == "waiting" %}
             <span id="status-badge" class="badge text-bg-warning fs-5 mb-3">Waiting</span>
-            <p id="status-text" class="fs-4 fw-semibold mb-0">
-              {% if ahead == 0 %}You're next!
+            <p id="status-text" class="fs-5 mb-2">Please wait. We will call your number.</p>
+          {% elif ticket.status == "called" %}
+            <span id="status-badge" class="badge text-bg-success fs-5 mb-3">Called</span>
+            <p id="status-text" class="fs-5 mb-2">It's your turn. Please go to the distribution table.</p>
+          {% elif ticket.status == "served" %}
+            <span id="status-badge" class="badge text-bg-secondary fs-5 mb-3">Received</span>
+            <p id="status-text" class="fs-5 mb-2">You already received your relief goods.</p>
+          {% else %}
+            <span id="status-badge" class="badge text-bg-danger fs-5 mb-3">No-show</span>
+            <p id="status-text" class="fs-5 mb-2">You left the queue.</p>
+          {% endif %}
+
+          {% if ticket.status in ["waiting", "called"] %}
+            <p id="position-text" class="fs-4 fw-semibold mb-0">
+              {% if ahead == 0 %}{% if ticket.status == "called" %}No one is ahead of you.{% else %}You're next!{% endif %}
               {% elif ahead == 1 %}1 person ahead of you
               {% else %}{{ ahead }} people ahead of you{% endif %}
             </p>
-          {% elif ticket.status == "called" %}
-            <span id="status-badge" class="badge text-bg-success fs-5 mb-3">Called</span>
-            <p id="status-text" class="fs-4 fw-semibold mb-0">It's your turn. Please go to the distribution table.</p>
-          {% elif ticket.status == "served" %}
-            <span id="status-badge" class="badge text-bg-secondary fs-5 mb-3">Received</span>
-            <p id="status-text" class="fs-4 fw-semibold mb-0">You already received your relief goods.</p>
-          {% else %}
-            <span id="status-badge" class="badge text-bg-danger fs-5 mb-3">No-show</span>
-            <p id="status-text" class="fs-4 fw-semibold mb-0">You left the queue.</p>
           {% endif %}
         </div>
 
@@ -51,20 +55,23 @@
     "served": ["Received", "text-bg-secondary"],
     "no-show": ["No-show", "text-bg-danger"]
   };
- 
-  function messageFor(status, ahead) {
-    if (status === "waiting") {
-      if (ahead === 0) return "You're next!";
-      if (ahead === 1) return "1 person ahead of you";
-      return ahead + " people ahead of you";
-    }
+
+  function messageFor(status) {
+    if (status === "waiting") return "Please wait. We will call your number.";
     if (status === "called") return "It's your turn. Please go to the distribution table.";
     if (status === "served") return "You already received your relief goods.";
     return "You left the queue.";
   }
- 
+
+  function positionFor(status, ahead) {
+    if (status !== "waiting" && status !== "called") return "";
+    if (ahead === 0) return status === "called" ? "No one is ahead of you." : "You're next!";
+    if (ahead === 1) return "1 person ahead of you";
+    return ahead + " people ahead of you";
+  }
+
   const timer = setInterval(refreshStatus, 10000);
- 
+
   async function refreshStatus() {
     try {
       const res = await fetch(statusUrl);
@@ -74,7 +81,13 @@
       const badge = document.getElementById("status-badge");
       badge.textContent = label;
       badge.className = "badge fs-5 mb-3 " + colorClass;
-      document.getElementById("status-text").textContent = messageFor(data.status, data.ahead);
+      document.getElementById("status-text").textContent = messageFor(data.status);
+      const position = document.getElementById("position-text");
+      if (position) {
+        const text = positionFor(data.status, data.ahead);
+        position.textContent = text;
+        position.classList.toggle("d-none", text === "");
+      }
       const leaveForm = document.getElementById("leave-form");
       if (leaveForm) {
         leaveForm.classList.toggle("d-none", data.status === "served" || data.status === "no-show");

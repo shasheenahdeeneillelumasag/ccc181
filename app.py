@@ -37,7 +37,7 @@ def ticket(ticket_id):
         abort(404)
     ahead = [x for x in TICKETS
              if x["service_id"] == t["service_id"]
-             and x["status"] == "waiting"
+             and x["status"] in ("waiting", "called")
              and x["number"] < t["number"]]
     service = next(s for s in SERVICES if s["id"] == t["service_id"])
     return render_template("ticket.html", ticket=t, service=service, ahead=len(ahead))
@@ -84,7 +84,7 @@ def ticket_status(ticket_id):
         abort(404)
     ahead = sum(1 for x in TICKETS
                 if x["service_id"] == t["service_id"]
-                and x["status"] == "waiting" and x["number"] < t["number"])
+                and x["status"] in ("waiting", "called") and x["number"] < t["number"])
     return {"status": t["status"], "ahead": ahead}
     
 @app.post("/queue/<int:ticket_id>/leave")
