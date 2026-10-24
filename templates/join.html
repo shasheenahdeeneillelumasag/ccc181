@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Join the queue · ReliefQ{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-6">
+    <h1 class="h3 mb-3">Join the queue</h1>
+
+    <form method="post" action="{{ url_for('join') }}" novalidate id="join-form">
+      <div class="mb-3">
+        <label for="name" class="form-label">Name of head of the family</label>
+        <input id="name" name="name" type="text" autocomplete="name" required
+               class="form-control {% if errors and errors.name %}is-invalid{% endif %}"
+               value="{{ form.get('name', '') }}"
+               {% if errors and errors.name %}aria-describedby="name-error"{% endif %}>
+        {% if errors and errors.name %}
+          <div id="name-error" class="invalid-feedback">{{ errors.name }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label for="household_size" class="form-label">Number of family members</label>
+        <input id="household_size" name="household_size" type="number" min="1" max="20"
+               inputmode="numeric" required
+               class="form-control {% if errors and errors.household_size %}is-invalid{% endif %}"
+               value="{{ form.get('household_size', '') }}"
+               {% if errors and errors.household_size %}aria-describedby="household_size-error"{% endif %}>
+        {% if errors and errors.household_size %}
+          <div id="household_size-error" class="invalid-feedback">{{ errors.household_size }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label for="service_id" class="form-label">Barangay and time slot</label>
+        <select id="service_id" name="service_id" required
+                class="form-select {% if errors and errors.service_id %}is-invalid{% endif %}"
+                {% if errors and errors.service_id %}aria-describedby="service_id-error"{% endif %}>
+          <option value="">Choose your barangay and time slot…</option>
+          {% for s in services %}
+            <option value="{{ s.id }}"
+              {% if form.get('service_id') == s.id|string %}selected{% endif %}>{{ s.name }}</option>
+          {% endfor %}
+        </select>
+        {% if errors and errors.service_id %}
+          <div id="service_id-error" class="invalid-feedback">{{ errors.service_id }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">Get a ticket</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
