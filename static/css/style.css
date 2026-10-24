@@ -49,3 +49,13 @@ footer {
   color: #5A6272;
   padding: 2rem 0;
 }
+
+main a:not(.btn) { color: #0a58ca; }
+
+.btn { min-height: 44px; min-width: 44px; }
+.form-control, .form-select { min-height: 44px; }
+
+.navbar .nav-link { color: #fff; }
+.navbar .nav-link:hover { text-decoration: underline; }
+.navbar .nav-link:focus-visible,
+.navbar-toggler:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
