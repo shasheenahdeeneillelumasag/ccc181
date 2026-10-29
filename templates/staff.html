@@ -54,6 +54,7 @@
         <th scope="col">Name</th>
         <th scope="col">Family members</th>
         <th scope="col">Barangay and time slot</th>
+        <th scope="col">Joined</th>
         <th scope="col">Status</th>
         <th scope="col">Actions</th>
       </tr>
@@ -62,9 +63,10 @@
       {% for t in queue %}
       <tr>
         <th scope="row">#{{ t.id }}</th>
-        <td>{{ t.name }}</td>
-        <td>{{ t.household_size }}</td>
-        <td>{{ names[t.service_id] }}</td>
+        <td>{{ t.family.head_name }}</td>
+        <td>{{ t.family.household_size }}</td>
+        <td>{{ t.family.barangay.name }}</td>
+        <td>{{ t.created_at|local }}</td>
         <td>
           {% if t.status == "waiting" %}<span class="badge text-bg-warning">Waiting</span>
           {% else %}<span class="badge text-bg-success">Called</span>{% endif %}

@@ -8,7 +8,8 @@
       <div class="card-body p-4">
         <h1 class="h6 fw-normal text-body-secondary mb-0">Your ticket</h1>
         <p class="display-1 fw-bold mb-2">#{{ ticket.id }}</p>
-        <p class="mb-3">{{ service.name }}</p>
+        <p class="mb-3">{{ barangay.name }}</p>
+           <p class="text-body-secondary mb-3">Joined {{ ticket.created_at|local }}</p>
 
         <div id="live-status" aria-live="polite">
           {% if ticket.status == "waiting" %}
@@ -17,7 +18,7 @@
           {% elif ticket.status == "called" %}
             <span id="status-badge" class="badge text-bg-success fs-5 mb-3">Called</span>
             <p id="status-text" class="fs-5 mb-2">It's your turn. Please go to the distribution table.</p>
-          {% elif ticket.status == "served" %}
+          {% elif ticket.status == "received" %}
             <span id="status-badge" class="badge text-bg-secondary fs-5 mb-3">Received</span>
             <p id="status-text" class="fs-5 mb-2">You already received your relief goods.</p>
           {% else %}
@@ -52,14 +53,14 @@
   const badges = {
     "waiting": ["Waiting", "text-bg-warning"],
     "called": ["Called", "text-bg-success"],
-    "served": ["Received", "text-bg-secondary"],
+    "received": ["Received", "text-bg-secondary"],
     "no-show": ["No-show", "text-bg-danger"]
   };
 
   function messageFor(status) {
     if (status === "waiting") return "Please wait. We will call your number.";
     if (status === "called") return "It's your turn. Please go to the distribution table.";
-    if (status === "served") return "You already received your relief goods.";
+    if (status === "received") return "You already received your relief goods.";
     return "You left the queue.";
   }
 
@@ -90,9 +91,9 @@
       }
       const leaveForm = document.getElementById("leave-form");
       if (leaveForm) {
-        leaveForm.classList.toggle("d-none", data.status === "served" || data.status === "no-show");
+        leaveForm.classList.toggle("d-none", data.status === "received" || data.status === "no-show");
       }
-      if (data.status === "served" || data.status === "no-show") clearInterval(timer);
+      if (data.status === "received" || data.status === "no-show") clearInterval(timer);
     } catch (err) {
       console.warn("Could not refresh status", err);
     }

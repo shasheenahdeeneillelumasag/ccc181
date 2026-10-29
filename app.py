@@ -6,7 +6,7 @@ then open http://127.0.0.1:5000
 """
 
 import os
-from datetime import time
+from datetime import time, timedelta, timezone
 
 from dotenv import load_dotenv
 from flask import Flask, abort, flash, redirect, render_template, request, url_for
@@ -33,17 +33,20 @@ def index():
     # keyword arguments to the template as variables.
     return render_template("index.html")
 
+PH_TIME = timezone(timedelta(hours=8))  # Philippine time has no daylight saving
+
+
+@app.template_filter("local")
+def local_time(value):
+    """Show a database time in Philippine time, e.g. Oct 26, 08:01 AM."""
+    return value.astimezone(PH_TIME).strftime("%b %d, %I:%M %p") if value else ""
+
+
 @app.get("/queue/<int:ticket_id>")
 def ticket(ticket_id):
-    t = next((t for t in TICKETS if t["number"] == ticket_id), None)
-    if t is None:
-        abort(404)
-    ahead = [x for x in TICKETS
-             if x["service_id"] == t["service_id"]
-             and x["status"] in ("waiting", "called")
-             and x["number"] < t["number"]]
-    service = next(s for s in SERVICES if s["id"] == t["service_id"])
-    return render_template("ticket.html", ticket=t, service=service, ahead=len(ahead))
+    t = db.get_or_404(Ticket, ticket_id)
+    return render_template("ticket.html", ticket=t, barangay=t.family.barangay,
+                           ahead=people_ahead(t))
 
 @app.route("/hello")
 def hello():
@@ -52,6 +55,16 @@ def hello():
 
 def all_barangays():
     return db.session.scalars(db.select(Barangay).order_by(Barangay.name)).all()
+
+def people_ahead(t):
+    """Count tickets still waiting in the same barangay that joined before t."""
+    stmt = (db.select(func.count())
+            .select_from(Ticket)
+            .join(Family, Ticket.family_id == Family.id)
+            .where(Family.barangay_id == t.family.barangay_id,
+                   Ticket.status == "waiting",
+                   Ticket.created_at < t.created_at))
+    return db.session.scalar(stmt)
 
 def clean_name(raw):
     """Trim extra spaces and use the same capitalization."""
@@ -126,13 +139,8 @@ def join():
 
 @app.get("/queue/<int:ticket_id>/status.json")
 def ticket_status(ticket_id):
-    t = next((t for t in TICKETS if t["number"] == ticket_id), None)
-    if t is None:
-        abort(404)
-    ahead = sum(1 for x in TICKETS
-                if x["service_id"] == t["service_id"]
-                and x["status"] in ("waiting", "called") and x["number"] < t["number"])
-    return {"status": t["status"], "ahead": ahead}
+    t = db.get_or_404(Ticket, ticket_id)
+    return {"status": t.status, "ahead": people_ahead(t)}
     
 @app.post("/queue/<int:ticket_id>/leave")
 def leave(ticket_id):
@@ -146,17 +154,27 @@ def leave(ticket_id):
 @app.get("/staff")
 def staff_dashboard():
     service_id = request.args.get("service_id", type=int)
-    queue = [t for t in TICKETS if t["status"] in ("waiting", "called")]
+    stmt = (db.select(Ticket)
+            .join(Family, Ticket.family_id == Family.id)
+            .where(Ticket.status.in_(["waiting", "called"]))
+            .order_by(Ticket.created_at))
     if service_id:
-        queue = [t for t in queue if t["service_id"] == service_id]
-    names = {s["id"]: s["name"] for s in SERVICES}
-    # Star feature: how many families are waiting per barangay, and how many already received
-    waiting_counts = {s["id"]: sum(1 for t in TICKETS
-                                   if t["service_id"] == s["id"] and t["status"] == "waiting")
-                      for s in SERVICES}
-    received = sum(1 for t in TICKETS if t["status"] == "served")
-    has_waiting = any(t["status"] == "waiting" for t in queue)
-    return render_template("staff.html", queue=queue, services=SERVICES, names=names,
+        stmt = stmt.where(Family.barangay_id == service_id)
+    queue = db.session.scalars(stmt).all()
+
+    barangays = all_barangays()
+    counts = dict(db.session.execute(
+        db.select(Family.barangay_id, func.count(Ticket.id))
+        .join(Ticket, Ticket.family_id == Family.id)
+        .where(Ticket.status == "waiting")
+        .group_by(Family.barangay_id)
+    ).all())
+    waiting_counts = {b.id: counts.get(b.id, 0) for b in barangays}
+    received = db.session.scalar(
+        db.select(func.count()).select_from(Ticket).where(Ticket.status == "received"))
+    has_waiting = any(t.status == "waiting" for t in queue)
+
+    return render_template("staff.html", queue=queue, services=barangays,
                            selected=service_id, waiting_counts=waiting_counts,
                            received=received, has_waiting=has_waiting)
  
