@@ -61,7 +61,7 @@
     <tbody>
       {% for t in queue %}
       <tr>
-        <th scope="row">#{{ t.number }}</th>
+        <th scope="row">#{{ t.id }}</th>
         <td>{{ t.name }}</td>
         <td>{{ t.household_size }}</td>
         <td>{{ names[t.service_id] }}</td>
@@ -70,13 +70,13 @@
           {% else %}<span class="badge text-bg-success">Called</span>{% endif %}
         </td>
         <td class="text-nowrap">
-          <form method="post" action="{{ url_for('staff_action', ticket_id=t.number, action='serve') }}" class="d-inline">
+          <form method="post" action="{{ url_for('staff_action', ticket_id=t.id, action='serve') }}" class="d-inline">
             <input type="hidden" name="service_id" value="{{ selected or '' }}">
-            <button type="submit" class="btn btn-sm btn-success" aria-label="Mark ticket {{ t.number }} as received">Received</button>
+            <button type="submit" class="btn btn-sm btn-success" aria-label="Mark ticket {{ t.id }} as received">Received</button>
           </form>
-          <form method="post" action="{{ url_for('staff_action', ticket_id=t.number, action='no-show') }}" class="d-inline">
+          <form method="post" action="{{ url_for('staff_action', ticket_id=t.id, action='no-show') }}" class="d-inline">
             <input type="hidden" name="service_id" value="{{ selected or '' }}">
-            <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Mark ticket {{ t.number }} as no-show">No-show</button>
+            <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Mark ticket {{ t.id }} as no-show">No-show</button>
           </form>
         </td>
       </tr>

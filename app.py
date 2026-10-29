@@ -26,17 +26,6 @@ app.config["SQLALCHEMY_ECHO"] = os.environ.get("SQLALCHEMY_ECHO") == "1"
 db.init_app(app)
 migrate = Migrate(app, db)
 
-SERVICES = [
-    {"id": 1, "name": "Barangay Tibanga (8:00 AM)"},
-    {"id": 2, "name": "Barangay Dalipuga (9:00 AM)"},
-    {"id": 3, "name": "Barangay Hinaplanon (10:00 AM)"},
-]
-
-TICKETS = [
-    {"number": 1, "name": "Nena Santos", "household_size": 5, "service_id": 1, "status": "waiting"},
-    {"number": 2, "name": "Ben Reyes", "household_size": 3, "service_id": 2, "status": "waiting"},
-    {"number": 3, "name": "Rosa Cruz", "household_size": 4, "service_id": 2, "status": "called"},
-]
 
 @app.route("/")
 def index():
@@ -61,35 +50,79 @@ def hello():
     # The plain-string version from the Routes slide.
     return "Hello, ReliefQ!"
 
+def all_barangays():
+    return db.session.scalars(db.select(Barangay).order_by(Barangay.name)).all()
+
+def clean_name(raw):
+    """Trim extra spaces and use the same capitalization."""
+    return " ".join(raw.split()).title()
+
 @app.get("/join")
 def join_form():
-    return render_template("join.html", services=SERVICES, form={})
- 
- 
+    return render_template("join.html", barangays=all_barangays(), form={})
+
+
 @app.post("/join")
 def join():
     form = request.form
-    name = form.get("name", "").strip()
+    name = clean_name(form.get("name", ""))
     household_size = form.get("household_size", type=int)
-    service_id = form.get("service_id", type=int)
- 
+    barangay_id = form.get("barangay_id", type=int)
+    barangay = db.session.get(Barangay, barangay_id) if barangay_id else None
+
     errors = {}
-    if not name:
-        errors["name"] = "Enter the name of the head of the family."
-    if household_size is None or not 1 <= household_size <= 20:
-        errors["household_size"] = "Enter how many people are in your family (1 to 20)."
-    if service_id not in [s["id"] for s in SERVICES]:
-        errors["service_id"] = "Choose your barangay and time slot."
- 
+    if not name or len(name) > 100:
+        errors["name"] = "Enter the full name of the head of the family."
+    if household_size is None or not 1 <= household_size:
+        errors["household_size"] = "Enter how many people are in your family."
+    if barangay is None:
+        errors["barangay_id"] = "Choose your barangay and time slot."
+
+
+    family = None
+    if not errors:
+        family = db.session.scalar(
+            db.select(Family).filter_by(barangay_id=barangay.id, head_name=name)
+        )
+    if family is not None:
+        received = db.session.scalar(
+            db.select(Ticket).filter_by(family_id=family.id, status="received")
+        )
+        open_ticket = db.session.scalar(
+            db.select(Ticket).where(
+                Ticket.family_id == family.id,
+                Ticket.status.in_(("waiting", "called")),
+            )
+        )
+        if received:
+            errors["name"] = "This family already received relief goods."
+        elif open_ticket:
+            errors["name"] = (
+                f"This family already has ticket (#{open_ticket.id}). If you are a different "
+                "family with the same name, add a short note to your name like 'Purok 2'."
+            )
+
     if errors:
         flash("Please fix the highlighted fields.", "danger")
-        return render_template("join.html", services=SERVICES, form=form, errors=errors), 400
- 
-    number = TICKETS[-1]["number"] + 1 if TICKETS else 1
-    TICKETS.append({"number": number, "name": name, "household_size": household_size,
-                    "service_id": service_id, "status": "waiting"})
-    flash(f"You joined the queue. Your ticket is #{number}.", "success")
-    return redirect(url_for("ticket", ticket_id=number))
+        return render_template("join.html", barangays=all_barangays(),
+                               form=form, errors=errors), 400
+
+    if family is None:
+        family = Family(head_name=name, household_size=household_size, barangay=barangay)
+    else:
+        family.household_size = household_size
+    ticket = Ticket(family=family)
+    db.session.add(ticket)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash("Something went wrong saving your ticket. Please try again.", "danger")
+        return render_template("join.html", barangays=all_barangays(),
+                               form=form, errors={}), 409
+
+    flash(f"You joined the queue. Your ticket is #{ticket.id}.", "success")
+    return redirect(url_for("ticket", ticket_id=ticket.id))
 
 @app.get("/queue/<int:ticket_id>/status.json")
 def ticket_status(ticket_id):
