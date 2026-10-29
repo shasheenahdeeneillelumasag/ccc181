@@ -1,22 +1,36 @@
-"""ReliefQ: relief goods queue system (Week 3)
+"""ReliefQ: relief goods queue system
 
 Run it with:
     flask --app app run --debug
 then open http://127.0.0.1:5000
 """
 
+import os
+from datetime import time
+
+from dotenv import load_dotenv
 from flask import Flask, abort, flash, redirect, render_template, request, url_for
+from flask_migrate import Migrate
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
+
+from models import Barangay, Family, Ticket, db
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "dev-only-change-me"  # Week 11 moves this into an environment variable
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["DATABASE_URL"]
+app.config["SQLALCHEMY_ECHO"] = os.environ.get("SQLALCHEMY_ECHO") == "1"
 
-# Time slots by purok. Change the names and times to match your barangay.
+db.init_app(app)
+migrate = Migrate(app, db)
+
 SERVICES = [
     {"id": 1, "name": "Barangay Tibanga (8:00 AM)"},
     {"id": 2, "name": "Barangay Dalipuga (9:00 AM)"},
     {"id": 3, "name": "Barangay Hinaplanon (10:00 AM)"},
 ]
-
 
 TICKETS = [
     {"number": 1, "name": "Nena Santos", "household_size": 5, "service_id": 1, "status": "waiting"},
