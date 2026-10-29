@@ -72,7 +72,7 @@ def clean_name(raw):
 
 @app.get("/join")
 def join_form():
-    return render_template("join.html", barangays=all_barangays(), form={})
+    return render_template("join.html", barangays=active_barangays(), form={})
 
 
 @app.post("/join")
@@ -88,7 +88,7 @@ def join():
         errors["name"] = "Enter the full name of the head of the family."
     if household_size is None or not 1 <= household_size:
         errors["household_size"] = "Enter how many people are in your family."
-    if barangay is None:
+    if barangay is None or not barangay.active:
         errors["barangay_id"] = "Choose your barangay and time slot."
 
 
@@ -117,7 +117,7 @@ def join():
 
     if errors:
         flash("Please fix the highlighted fields.", "danger")
-        return render_template("join.html", barangays=all_barangays(),
+        return render_template("join.html", barangays=active_barangays(),
                                form=form, errors=errors), 400
 
     if family is None:
@@ -131,7 +131,7 @@ def join():
     except IntegrityError:
         db.session.rollback()
         flash("Something went wrong saving your ticket. Please try again.", "danger")
-        return render_template("join.html", barangays=all_barangays(),
+        return render_template("join.html", barangays=active_barangays(),
                                form=form, errors={}), 409
 
     flash(f"You joined the queue. Your ticket is #{ticket.id}.", "success")
@@ -144,13 +144,22 @@ def ticket_status(ticket_id):
     
 @app.post("/queue/<int:ticket_id>/leave")
 def leave(ticket_id):
-    t = next((t for t in TICKETS if t["number"] == ticket_id), None)
-    if t is None:
-        abort(404)
-    t["status"] = "no-show"
-    flash(f"Ticket #{ticket_id} has left the queue.", "info")
+    t = db.get_or_404(Ticket, ticket_id)
+    if t.status in ("waiting", "called"):
+        t.status = "left"  # soft delete: the row stays for reports
+        db.session.commit()
+    flash("You left the queue.", "info")
     return redirect(url_for("index"))
-    
+
+@app.post("/staff/tickets/<int:ticket_id>/delete")
+def delete_ticket(ticket_id):
+    t = db.get_or_404(Ticket, ticket_id)
+    db.session.delete(t) 
+    db.session.commit()
+    flash(f"Ticket #{ticket_id} was deleted.", "warning")
+    return redirect(url_for("staff_dashboard",
+                            service_id=request.form.get("service_id", type=int)))
+
 @app.get("/staff")
 def staff_dashboard():
     service_id = request.args.get("service_id", type=int)
@@ -181,28 +190,41 @@ def staff_dashboard():
  
 @app.post("/staff/call-next")
 def call_next():
-    service_id = request.form.get("service_id", type=int)
-    nxt = next((t for t in TICKETS
-                if t["status"] == "waiting"
-                and (not service_id or t["service_id"] == service_id)), None)
+    barangay_id = request.form.get("service_id", type=int)
+    stmt = (db.select(Ticket)
+            .where(Ticket.status == "waiting")
+            .order_by(Ticket.created_at)
+            .limit(1))
+    if barangay_id:
+        stmt = (stmt.join(Family, Ticket.family_id == Family.id)
+                    .where(Family.barangay_id == barangay_id))
+    nxt = db.session.scalar(stmt)
     if nxt is None:
         flash("No one is waiting.", "warning")
     else:
-        nxt["status"] = "called"
-        flash(f"Ticket #{nxt['number']} is called.", "info")
-    return redirect(url_for("staff_dashboard", service_id=service_id))
+        nxt.status = "called"
+        nxt.called_at = func.now()
+        db.session.commit()
+        flash(f"Ticket #{nxt.id} is called.", "info")
+    return redirect(url_for("staff_dashboard", service_id=barangay_id))
  
  
+STAFF_ACTIONS = {"call": "called", "serve": "received", "no-show": "no-show"}
+
+
 @app.post("/staff/tickets/<int:ticket_id>/<action>")
 def staff_action(ticket_id, action):
-    new_status = {"call": "called", "serve": "served", "no-show": "no-show"}.get(action)
-    t = next((t for t in TICKETS if t["number"] == ticket_id), None)
-    if t is None or new_status is None:
+    new_status = STAFF_ACTIONS.get(action)
+    if new_status is None:
         abort(404)
-    t["status"] = new_status
-    label = "received" if new_status == "served" else new_status
-    flash(f"Ticket #{ticket_id} marked {label}.", "info")
-    return redirect(url_for("staff_dashboard", service_id=request.form.get("service_id", type=int)))
+    t = db.get_or_404(Ticket, ticket_id)
+    t.status = new_status
+    if new_status == "called":
+        t.called_at = func.now()  # the database fills in the time
+    db.session.commit()
+    flash(f"Ticket #{ticket_id} marked {new_status}.", "info")
+    return redirect(url_for("staff_dashboard",
+                            service_id=request.form.get("service_id", type=int)))
 
 @app.cli.command("seed")
 def seed():
@@ -218,6 +240,75 @@ def seed():
             db.session.add(Barangay(name=name, slot_time=slot))
     db.session.commit()
     print("Barangays are ready.")
+
+def active_barangays():
+    stmt = db.select(Barangay).filter_by(active=True).order_by(Barangay.name)
+    return db.session.scalars(stmt).all()
+
+
+def parse_slot(raw):
+    try:
+        return time.fromisoformat(raw)
+    except ValueError:
+        return None
+
+
+@app.post("/staff/services")
+def service_create():
+    name = request.form.get("name", "").strip()
+    slot = parse_slot(request.form.get("slot_time", ""))
+    if not name or len(name) > 60 or slot is None:
+        flash("Enter a name (up to 60 characters) and a time slot.", "danger")
+        return redirect(url_for("services_list"))
+    db.session.add(Barangay(name=name, slot_time=slot))
+    try:
+        db.session.commit()
+        flash(f"Barangay “{name}” added.", "success")
+    except IntegrityError:
+        db.session.rollback()
+        flash(f"A barangay named “{name}” already exists.", "danger")
+    return redirect(url_for("services_list"))
+
+@app.post("/staff/services/<int:service_id>/edit")
+def service_edit(service_id):
+    b = db.get_or_404(Barangay, service_id)
+    name = request.form.get("name", "").strip()
+    slot = parse_slot(request.form.get("slot_time", ""))
+    if not name or len(name) > 60 or slot is None:
+        flash("Enter a name (up to 60 characters) and a time slot.", "danger")
+        return redirect(url_for("services_list"))
+    b.name = name
+    b.slot_time = slot
+    b.active = request.form.get("active") == "on" 
+    try:
+        db.session.commit()
+        flash(f"Barangay “{name}” updated.", "success")
+    except IntegrityError:
+        db.session.rollback()
+        flash(f"A barangay named “{name}” already exists.", "danger")
+    return redirect(url_for("services_list"))
+
+
+@app.post("/staff/services/<int:service_id>/delete")
+def service_delete(service_id):
+    b = db.get_or_404(Barangay, service_id)
+    if b.families:
+        flash(f"“{b.name}” has families registered, so it cannot be deleted. Turn it off instead.", "danger")
+        return redirect(url_for("services_list"))
+    name = b.name
+    db.session.delete(b)
+    db.session.commit()
+    flash(f"Barangay “{name}” deleted.", "warning")
+    return redirect(url_for("services_list"))
+
+@app.get("/staff/services")
+def services_list():
+    counts = dict(db.session.execute(
+        db.select(Family.barangay_id, func.count(Ticket.id))
+        .join(Ticket, Ticket.family_id == Family.id)
+        .group_by(Family.barangay_id)
+    ).all())
+    return render_template("services.html", barangays=all_barangays(), counts=counts)
 
 
 if __name__ == "__main__":

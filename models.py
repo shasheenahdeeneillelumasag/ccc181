@@ -1,7 +1,7 @@
 from datetime import datetime, time
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String, Time, UniqueConstraint, func, text
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String, Time, UniqueConstraint, func, text, true
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 db = SQLAlchemy()
@@ -12,6 +12,7 @@ class Barangay(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(60), unique=True)
     slot_time: Mapped[time] = mapped_column(Time, nullable=False)
+    active: Mapped[bool] = mapped_column(default=True, server_default=true())
 
     families: Mapped[list["Family"]] = relationship(back_populates="barangay")
 
