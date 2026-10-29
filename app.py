@@ -153,6 +153,22 @@ def staff_action(ticket_id, action):
     flash(f"Ticket #{ticket_id} marked {label}.", "info")
     return redirect(url_for("staff_dashboard", service_id=request.form.get("service_id", type=int)))
 
+@app.cli.command("seed")
+def seed():
+    """Add the starting barangays if they are not there yet."""
+    starting = [
+        ("Barangay Tibanga", time(8, 0)),
+        ("Barangay Dalipuga", time(9, 0)),
+        ("Barangay Hinaplanon", time(10, 0)),
+    ]
+    for name, slot in starting:
+        exists = db.session.scalar(db.select(Barangay).filter_by(name=name))
+        if exists is None:
+            db.session.add(Barangay(name=name, slot_time=slot))
+    db.session.commit()
+    print("Barangays are ready.")
+
+
 if __name__ == "__main__":
     # Lets you also start the app with: python app.py
     app.run(debug=True)
