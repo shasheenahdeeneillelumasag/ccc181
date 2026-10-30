@@ -86,7 +86,7 @@ def join():
     errors = {}
     if not name or len(name) > 100:
         errors["name"] = "Enter the full name of the head of the family."
-    if household_size is None or not 1 <= household_size:
+    if household_size is None or not 1 <= household_size <= 100:
         errors["household_size"] = "Enter how many people are in your family."
     if barangay is None or not barangay.active:
         errors["barangay_id"] = "Choose your barangay and time slot."
@@ -218,13 +218,21 @@ def staff_action(ticket_id, action):
     if new_status is None:
         abort(404)
     t = db.get_or_404(Ticket, ticket_id)
+    back = url_for("staff_dashboard", service_id=request.form.get("service_id", type=int))
+    if t.status not in ("waiting", "called"):
+        flash(f"Ticket #{ticket_id} is already {t.status}, so it cannot be changed.", "warning")
+        return redirect(back)
     t.status = new_status
     if new_status == "called":
-        t.called_at = func.now()  # the database fills in the time
-    db.session.commit()
+        t.called_at = func.now()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash("Could not save that change.", "danger")
+        return redirect(back)
     flash(f"Ticket #{ticket_id} marked {new_status}.", "info")
-    return redirect(url_for("staff_dashboard",
-                            service_id=request.form.get("service_id", type=int)))
+    return redirect(back)
 
 @app.cli.command("seed")
 def seed():

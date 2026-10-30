@@ -19,7 +19,7 @@
 | FR-05 | A staff member can mark a called family as received or no-show | Must | Yes | Built (Week 3) |
 | FR-06 | A family can leave the queue before they receive their goods | Must | Yes | Built (Week 3) | 
 | FR-07 ★ | A staff member can see which families already received goods, so that no family gets goods twice. | Must | Yes | This week |
-| FR-08 | A staff member can add, rename, and switch off a barangay and its time slot. | Won't (this semester) | Yes | Dropped | 
+| FR-08 | A staff member can add, rename, and switch off a barangay and its time slot. | Must | Yes | This Week | 
 | FR-09 | A staff member can filter the waiting list by barangay. | Should | No | Built (Week 3) | 
 | FR-10 ★ | A staff member can see how many families are waiting in each barangay. | Should | Yes | Built (Week 3) | 
 | FR-11 | A staff member can give a ticket number on paper to a family without a phone, so they are not left out | Won't (This Semester) | Yes | Dropped |

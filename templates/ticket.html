@@ -9,7 +9,7 @@
         <h1 class="h6 fw-normal text-body-secondary mb-0">Your ticket</h1>
         <p class="display-1 fw-bold mb-2">#{{ ticket.id }}</p>
         <p class="mb-3">{{ barangay.name }}</p>
-           <p class="text-body-secondary mb-3">Joined {{ ticket.created_at|local }}</p>
+        <p class="text-body-secondary mb-3">Joined {{ ticket.created_at|local }}</p>
 
         <div id="live-status" aria-live="polite">
           {% if ticket.status == "waiting" %}
@@ -19,10 +19,13 @@
             <span id="status-badge" class="badge text-bg-success fs-5 mb-3">Called</span>
             <p id="status-text" class="fs-5 mb-2">It's your turn. Please go to the distribution table.</p>
           {% elif ticket.status == "received" %}
-            <span id="status-badge" class="badge text-bg-secondary fs-5 mb-3">Received</span>
+            <span id="status-badge" class="badge text-bg-info fs-5 mb-3">Received</span>
             <p id="status-text" class="fs-5 mb-2">You already received your relief goods.</p>
-          {% else %}
+          {% elif ticket.status == "no-show" %}
             <span id="status-badge" class="badge text-bg-danger fs-5 mb-3">No-show</span>
+            <p id="status-text" class="fs-5 mb-2">You were marked as a no-show.</p>
+          {% else %}
+            <span id="status-badge" class="badge text-bg-secondary fs-5 mb-3">Left</span>
             <p id="status-text" class="fs-5 mb-2">You left the queue.</p>
           {% endif %}
 
@@ -53,14 +56,16 @@
   const badges = {
     "waiting": ["Waiting", "text-bg-warning"],
     "called": ["Called", "text-bg-success"],
-    "received": ["Received", "text-bg-secondary"],
-    "no-show": ["No-show", "text-bg-danger"]
+    "received": ["Received", "text-bg-info"],
+    "no-show": ["No-show", "text-bg-danger"],
+    "left": ["Left", "text-bg-secondary"]
   };
 
   function messageFor(status) {
     if (status === "waiting") return "Please wait. We will call your number.";
     if (status === "called") return "It's your turn. Please go to the distribution table.";
     if (status === "received") return "You already received your relief goods.";
+    if (status === "no-show") return "You were marked as a no-show.";
     return "You left the queue.";
   }
 
@@ -78,7 +83,7 @@
       const res = await fetch(statusUrl);
       if (!res.ok) return;
       const data = await res.json();
-      const [label, colorClass] = badges[data.status];
+      const [label, colorClass] = badges[data.status] || ["Left", "text-bg-secondary"];
       const badge = document.getElementById("status-badge");
       badge.textContent = label;
       badge.className = "badge fs-5 mb-3 " + colorClass;
@@ -91,9 +96,9 @@
       }
       const leaveForm = document.getElementById("leave-form");
       if (leaveForm) {
-        leaveForm.classList.toggle("d-none", data.status === "received" || data.status === "no-show");
+        leaveForm.classList.toggle("d-none", ["received", "no-show", "left"].includes(data.status));
       }
-      if (data.status === "received" || data.status === "no-show") clearInterval(timer);
+      if (["received", "no-show", "left"].includes(data.status)) clearInterval(timer);
     } catch (err) {
       console.warn("Could not refresh status", err);
     }

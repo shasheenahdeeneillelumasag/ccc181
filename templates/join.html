@@ -6,21 +6,49 @@
   <div class="col-12 col-md-8 col-lg-6">
     <h1 class="h3 mb-3">Join the queue</h1>
 
-    <form method="post" action="{{ url_for('join') }}" novalidate id="join-form">
+    <form method="post" action="{{ url_for('join') }}">
+  
       <div class="mb-3">
-        <label for="name" class="form-label">Full name of head of the family (first, middle, last)</label>
-        <input id="name" name="name" type="text" autocomplete="name" required maxlength="100"
-               class="form-control {% if errors and errors.name %}is-invalid{% endif %}"
-               value="{{ form.get('name', '') }}"
-               {% if errors and errors.name %}aria-describedby="name-error"{% endif %}>
-        {% if errors and errors.name %}
-          <div id="name-error" class="invalid-feedback">{{ errors.name }}</div>
-        {% endif %}
-      </div>
+        <label for="name" class="form-label">Head of Family Name</label>
+        <input 
+        type="text" 
+        id="name" 
+        name="name" 
+        class="form-control" 
+        maxlength="100" 
+        required
+      >
+    </div>
+
+    <div class="mb-3">
+      <label for="household_size" class="form-label">Household Size (number of family members)</label>
+      <input 
+        type="number" 
+        id="household_size" 
+        name="household_size" 
+        class="form-control" 
+        min="1" 
+        max="100"
+        required
+      >
+    </div>
+
+    <div class="mb-3">
+      <label for="barangay_id" class="form-label">Barangay</label>
+      <select id="barangay_id" name="barangay_id" class="form-select" required>
+        <option value="">Select your barangay</option>
+        {% for barangay in barangays %}
+          <option value="{{ barangay.id }}">{{ barangay.name }}</option>
+        {% endfor %}
+      </select>
+  </div>
+
+  <button type="submit" class="btn btn-primary w-100">Get Ticket</button>
+</form>
 
       <div class="mb-3">
         <label for="household_size" class="form-label">Number of family members</label>
-        <input id="household_size" name="household_size" type="number" min="1" max="20"
+        <input id="household_size" name="household_size" type="number" min="1"
                inputmode="numeric" required
                class="form-control {% if errors and errors.household_size %}is-invalid{% endif %}"
                value="{{ form.get('household_size', '') }}"
