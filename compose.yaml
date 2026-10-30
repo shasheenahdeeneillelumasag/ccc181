@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:17
+    container_name: reliefq-db
+    environment:
+      POSTGRES_USER: reliefq
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: reliefq
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reliefq -d reliefq"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

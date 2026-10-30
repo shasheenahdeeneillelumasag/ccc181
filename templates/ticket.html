@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Ticket #{{ ticket.number }} · ReliefQ{% endblock %}
+{% block title %}Ticket #{{ ticket.id }} · ReliefQ{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -7,8 +7,9 @@
     <div class="card text-center shadow-sm">
       <div class="card-body p-4">
         <h1 class="h6 fw-normal text-body-secondary mb-0">Your ticket</h1>
-        <p class="display-1 fw-bold mb-2">#{{ ticket.number }}</p>
-        <p class="mb-3">{{ service.name }}</p>
+        <p class="display-1 fw-bold mb-2">#{{ ticket.id }}</p>
+        <p class="mb-3">{{ barangay.name }}</p>
+        <p class="text-body-secondary mb-3">Joined {{ ticket.created_at|local }}</p>
 
         <div id="live-status" aria-live="polite">
           {% if ticket.status == "waiting" %}
@@ -17,11 +18,14 @@
           {% elif ticket.status == "called" %}
             <span id="status-badge" class="badge text-bg-success fs-5 mb-3">Called</span>
             <p id="status-text" class="fs-5 mb-2">It's your turn. Please go to the distribution table.</p>
-          {% elif ticket.status == "served" %}
-            <span id="status-badge" class="badge text-bg-secondary fs-5 mb-3">Received</span>
+          {% elif ticket.status == "received" %}
+            <span id="status-badge" class="badge text-bg-info fs-5 mb-3">Received</span>
             <p id="status-text" class="fs-5 mb-2">You already received your relief goods.</p>
-          {% else %}
+          {% elif ticket.status == "no-show" %}
             <span id="status-badge" class="badge text-bg-danger fs-5 mb-3">No-show</span>
+            <p id="status-text" class="fs-5 mb-2">You were marked as a no-show.</p>
+          {% else %}
+            <span id="status-badge" class="badge text-bg-secondary fs-5 mb-3">Left</span>
             <p id="status-text" class="fs-5 mb-2">You left the queue.</p>
           {% endif %}
 
@@ -35,7 +39,7 @@
         </div>
 
         {% if ticket.status in ["waiting", "called"] %}
-        <form id="leave-form" method="post" action="{{ url_for('leave', ticket_id=ticket.number) }}" class="mt-4">
+        <form id="leave-form" method="post" action="{{ url_for('leave', ticket_id=ticket.id) }}" class="mt-4">
           <button type="submit" class="btn btn-outline-danger w-100">Leave the queue</button>
         </form>
         {% endif %}
@@ -48,18 +52,20 @@
 
 {% block scripts %}
 <script>
-  const statusUrl = "{{ url_for('ticket_status', ticket_id=ticket.number) }}";
+  const statusUrl = "{{ url_for('ticket_status', ticket_id=ticket.id) }}";
   const badges = {
     "waiting": ["Waiting", "text-bg-warning"],
     "called": ["Called", "text-bg-success"],
-    "served": ["Received", "text-bg-secondary"],
-    "no-show": ["No-show", "text-bg-danger"]
+    "received": ["Received", "text-bg-info"],
+    "no-show": ["No-show", "text-bg-danger"],
+    "left": ["Left", "text-bg-secondary"]
   };
 
   function messageFor(status) {
     if (status === "waiting") return "Please wait. We will call your number.";
     if (status === "called") return "It's your turn. Please go to the distribution table.";
-    if (status === "served") return "You already received your relief goods.";
+    if (status === "received") return "You already received your relief goods.";
+    if (status === "no-show") return "You were marked as a no-show.";
     return "You left the queue.";
   }
 
@@ -77,7 +83,7 @@
       const res = await fetch(statusUrl);
       if (!res.ok) return;
       const data = await res.json();
-      const [label, colorClass] = badges[data.status];
+      const [label, colorClass] = badges[data.status] || ["Left", "text-bg-secondary"];
       const badge = document.getElementById("status-badge");
       badge.textContent = label;
       badge.className = "badge fs-5 mb-3 " + colorClass;
@@ -90,9 +96,9 @@
       }
       const leaveForm = document.getElementById("leave-form");
       if (leaveForm) {
-        leaveForm.classList.toggle("d-none", data.status === "served" || data.status === "no-show");
+        leaveForm.classList.toggle("d-none", ["received", "no-show", "left"].includes(data.status));
       }
-      if (data.status === "served" || data.status === "no-show") clearInterval(timer);
+      if (["received", "no-show", "left"].includes(data.status)) clearInterval(timer);
     } catch (err) {
       console.warn("Could not refresh status", err);
     }

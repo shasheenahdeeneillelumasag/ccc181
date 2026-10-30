@@ -6,21 +6,23 @@
   <div class="col-12 col-md-8 col-lg-6">
     <h1 class="h3 mb-3">Join the queue</h1>
 
-    <form method="post" action="{{ url_for('join') }}" novalidate id="join-form">
+    <form method="post" action="{{ url_for('join') }}">
+  
       <div class="mb-3">
-        <label for="name" class="form-label">Name of head of the family</label>
-        <input id="name" name="name" type="text" autocomplete="name" required
-               class="form-control {% if errors and errors.name %}is-invalid{% endif %}"
-               value="{{ form.get('name', '') }}"
-               {% if errors and errors.name %}aria-describedby="name-error"{% endif %}>
-        {% if errors and errors.name %}
-          <div id="name-error" class="invalid-feedback">{{ errors.name }}</div>
-        {% endif %}
-      </div>
+        <label for="name" class="form-label">Head of Family Name</label>
+        <input 
+        type="text" 
+        id="name" 
+        name="name" 
+        class="form-control" 
+        maxlength="100" 
+        required
+      >
+    </div>
 
       <div class="mb-3">
         <label for="household_size" class="form-label">Number of family members</label>
-        <input id="household_size" name="household_size" type="number" min="1" max="20"
+        <input id="household_size" name="household_size" type="number" min="1" max="100"
                inputmode="numeric" required
                class="form-control {% if errors and errors.household_size %}is-invalid{% endif %}"
                value="{{ form.get('household_size', '') }}"
@@ -31,18 +33,18 @@
       </div>
 
       <div class="mb-3">
-        <label for="service_id" class="form-label">Barangay and time slot</label>
-        <select id="service_id" name="service_id" required
-                class="form-select {% if errors and errors.service_id %}is-invalid{% endif %}"
-                {% if errors and errors.service_id %}aria-describedby="service_id-error"{% endif %}>
+        <label for="barangay_id" class="form-label">Barangay and time slot</label>
+        <select id="barangay_id" name="barangay_id" required
+                class="form-select {% if errors and errors.barangay_id %}is-invalid{% endif %}"
+                {% if errors and errors.barangay_id %}aria-describedby="barangay_id-error"{% endif %}>
           <option value="">Choose your barangay and time slot…</option>
-          {% for s in services %}
-            <option value="{{ s.id }}"
-              {% if form.get('service_id') == s.id|string %}selected{% endif %}>{{ s.name }}</option>
+          {% for b in barangays %}
+            <option value="{{ b.id }}"
+              {% if form.get('barangay_id') == b.id|string %}selected{% endif %}>{{ b.name }} ({{ b.slot_time.strftime("%I:%M %p").lstrip("0") }})</option>
           {% endfor %}
         </select>
-        {% if errors and errors.service_id %}
-          <div id="service_id-error" class="invalid-feedback">{{ errors.service_id }}</div>
+        {% if errors and errors.barangay_id %}
+          <div id="barangay_id-error" class="invalid-feedback">{{ errors.barangay_id }}</div>
         {% endif %}
       </div>
 

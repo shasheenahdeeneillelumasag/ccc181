@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Manage barangays · ReliefQ{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Manage barangays</h1>
+
+<form method="post" action="{{ url_for('service_create') }}" class="row g-2 mb-4">
+  <div class="col-12 col-md-5">
+    <label for="new-name" class="form-label mb-1">Name</label>
+    <input id="new-name" name="name" class="form-control" maxlength="60" required>
+  </div>
+  <div class="col-6 col-md-3">
+    <label for="new-slot" class="form-label mb-1">Time slot</label>
+    <input id="new-slot" name="slot_time" type="time" class="form-control" required>
+  </div>
+  <div class="col-6 col-md-2 d-flex align-items-end">
+    <button type="submit" class="btn btn-primary w-100">Add</button>
+  </div>
+</form>
+
+<div class="table-responsive">
+  <table class="table table-bordered align-middle bg-white">
+    <thead class="table-light">
+      <tr>
+        <th>Name</th>
+        <th style="width: 170px;">Time slot</th>
+        <th class="text-center" style="width: 100px;">Active</th>
+        <th class="text-center" style="width: 100px;">Tickets</th>
+        <th class="text-center" style="width: 170px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in barangays %}
+      <tr>
+        <!-- Name Column -->
+        <td>
+          <form id="edit-form-{{ b.id }}" method="post" action="{{ url_for('service_edit', service_id=b.id) }}"></form>
+          <input form="edit-form-{{ b.id }}" name="name" value="{{ b.name }}" class="form-control" maxlength="60" required aria-label="Name of {{ b.name }}">
+        </td>
+        
+        <!-- Time Slot Column -->
+        <td>
+          <input form="edit-form-{{ b.id }}" name="slot_time" type="time" value="{{ b.slot_time.strftime('%H:%M') }}" class="form-control" required aria-label="Time slot of {{ b.name }}">
+        </td>
+        
+        <!-- Active Checkbox Column -->
+        <td class="text-center">
+          <div class="form-check d-inline-block mb-0">
+            <input form="edit-form-{{ b.id }}" class="form-check-input" type="checkbox" name="active" id="active-{{ b.id }}" {% if b.active %}checked{% endif %}>
+            <label class="form-check-label d-none" for="active-{{ b.id }}">Active</label>
+          </div>
+        </td>
+        
+        <!-- Ticket Count Column -->
+        <td class="text-center fw-semibold">
+          {{ counts.get(b.id, 0) }}
+        </td>
+        
+        <!-- Actions Column (Save & Delete) -->
+        <td class="text-center">
+          <div class="d-flex gap-2 justify-content-center align-items-center">
+            <button form="edit-form-{{ b.id }}" type="submit" class="btn btn-sm btn-outline-dark">Save</button>
+            <form method="post" action="{{ url_for('service_delete', service_id=b.id) }}" data-confirm="Delete {{ b.name }}? This cannot be undone." class="m-0">
+              <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
