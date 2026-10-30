@@ -7,7 +7,7 @@
 | Barangay must exist | Flask | `curl.exe` with `barangay_id=999` | HTTP/1.1 400 BAD REQUEST |
 | Name is at most 100 characters | Flask | `curl.exe` with a name of 150 letters | HTTP/1.1 400 BAD REQUEST |
 | A switched-off barangay cannot be chosen | Flask | Switched a barangay off, then `curl.exe` with its `barangay_id` | HTTP/1.1 400 BAD REQUEST |
-| A family with an open ticket cannot join again | Flask | Joined twice with the same name | ERROR: duplicate key value violates unique constraint "uq_tickets_one_open_per_family" |
+| A family with an open ticket cannot join again | Flask | Joined twice with the same name | `ERROR: duplicate key value violates unique constraint "uq_tickets_one_open_per_family"` |
 | FOREIGN KEY: a family needs a real barangay | Database | `INSERT INTO families (head_name, household_size, barangay_id) VALUES ('Test Family', 3, 999);` in psql | `ERROR: insert or update on table "families" violates foreign key constraint "families_barangay_id_fkey"` |
 | FOREIGN KEY: a ticket needs a real family | Database | `INSERT INTO tickets (family_id) VALUES (999);` | `ERROR: insert or update on table "tickets" violates foreign key constraint "tickets_family_id_fkey"` |
 | CHECK: status must be one of five values | Database | `UPDATE tickets SET status = 'lost' WHERE id = 1;` | `ERROR: new row for relation "tickets" violates check constraint "ck_tickets_status"` |

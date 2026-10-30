@@ -18,13 +18,13 @@
 | FR-04 | A staff member can call the next waiting family for a barangay | Must | Yes | Built (Week 3) | 
 | FR-05 | A staff member can mark a called family as received or no-show | Must | Yes | Built (Week 3) |
 | FR-06 | A family can leave the queue before they receive their goods | Must | Yes | Built (Week 3) | 
-| FR-07 ★ | A staff member can see which families already received goods, so that no family gets goods twice. | Must | Yes | This week |
-| FR-08 | A staff member can add, rename, and switch off a barangay and its time slot. | Must | Yes | This Week | 
+| FR-07 ★ | A staff member can see which families already received goods, so that no family gets goods twice. | Must | Yes | Built (Week 4) |
+| FR-08 | A staff member can add, rename, and switch off a barangay and its time slot. | Must | Yes | Built (Week 4) | 
 | FR-09 | A staff member can filter the waiting list by barangay. | Should | No | Built (Week 3) | 
 | FR-10 ★ | A staff member can see how many families are waiting in each barangay. | Should | Yes | Built (Week 3) | 
 | FR-11 | A staff member can give a ticket number on paper to a family without a phone, so they are not left out | Won't (This Semester) | Yes | Dropped |
 | FR-12 ★ | A senior citizen or a person with disability can join a priority lane that is served first. | Should | Yes | Later |
-| FR-13 ★ | A family cannot join the queue again while they still have a waiting or called ticket in the same barangay. | Should | Yes | This week |
+| FR-13 ★ | A family cannot join the queue again while they still have a waiting or called ticket in the same barangay. | Should | Yes | Built (Week 4) |
 
 ## Non-functional requirements
 
@@ -39,13 +39,12 @@
 | NFR-07 | The app collects only the name, the number of family members, and their barangay with its time slot. | Privacy | Must | 
 
 ## MVP
- - Must Functional requirements: FR-01, FR-02, FR-04, FR-05, FR-06, FR-07
+ - Must Functional requirements: FR-01, FR-02, FR-04, FR-05, FR-06, FR-07, FR-08
  - Must non-functional requirements: NFR-01, NFR-02, NFR-03, NFR-05, NFR-06, NFR-07.
 
 This is the smallest version that still solves the problem wherein a family can join, see their place, and be called. Staff can call families, mark who received goods, and see who already received, so nobody gets goods twice. The data stays safe when the server restarts.
 
 ## Out of scope
-- Managing barangays and time slots inside the app. The list is fixed when the database is created.
 - Paper tickets for families without a phone. 
 - Text messages when the turn is near. It cost money and need extra setup.
 - Inventory of relief goods.This is a different problem from the queue.

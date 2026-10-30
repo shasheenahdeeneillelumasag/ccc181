@@ -20,35 +20,9 @@
       >
     </div>
 
-    <div class="mb-3">
-      <label for="household_size" class="form-label">Household Size (number of family members)</label>
-      <input 
-        type="number" 
-        id="household_size" 
-        name="household_size" 
-        class="form-control" 
-        min="1" 
-        max="100"
-        required
-      >
-    </div>
-
-    <div class="mb-3">
-      <label for="barangay_id" class="form-label">Barangay</label>
-      <select id="barangay_id" name="barangay_id" class="form-select" required>
-        <option value="">Select your barangay</option>
-        {% for barangay in barangays %}
-          <option value="{{ barangay.id }}">{{ barangay.name }}</option>
-        {% endfor %}
-      </select>
-  </div>
-
-  <button type="submit" class="btn btn-primary w-100">Get Ticket</button>
-</form>
-
       <div class="mb-3">
         <label for="household_size" class="form-label">Number of family members</label>
-        <input id="household_size" name="household_size" type="number" min="1"
+        <input id="household_size" name="household_size" type="number" min="1" max="100"
                inputmode="numeric" required
                class="form-control {% if errors and errors.household_size %}is-invalid{% endif %}"
                value="{{ form.get('household_size', '') }}"

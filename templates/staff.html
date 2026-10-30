@@ -65,7 +65,11 @@
         <th scope="row">#{{ t.id }}</th>
         <td>{{ t.family.head_name }}</td>
         <td>{{ t.family.household_size }}</td>
-        <td>{{ t.family.barangay.name }}</td>
+        <td>{{ t.family.barangay.name }}
+            {% if t.family.barangay.slot_time %}
+              ({{ t.family.barangay.slot_time.strftime("%I:%M %p").lstrip("0") }})
+            {% endif %}
+        </td>
         <td>{{ t.created_at|local }}</td>
         <td>
           {% if t.status == "waiting" %}<span class="badge text-bg-warning">Waiting</span>
